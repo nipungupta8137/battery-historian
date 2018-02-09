@@ -434,12 +434,24 @@ func closeConnection(w http.ResponseWriter, s string) {
 // UploadHandler serves the upload html page.
 func UploadHandler(w http.ResponseWriter, r *http.Request) {
 	// If false, the upload template will load closure and js files in the header.
+	fileList := []string{}
+
+	if r.URL.Query()["file1"] != nil {
+		fileList = append(fileList, r.URL.Query().Get("file1"))
+	}
+
+	if r.URL.Query()["file2"] != nil {
+		fileList = append(fileList, r.URL.Query().Get("file2"))
+	}
+
 	uploadData := struct {
 		IsOptimizedJs bool
 		ResVersion    int
+		FileList      []string
 	}{
 		isOptimizedJs,
 		resVersion,
+		fileList,
 	}
 
 	if err := uploadTempl.Execute(w, uploadData); err != nil {
@@ -535,7 +547,43 @@ func HTTPAnalyzeHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		fs[part.FormName()] = UploadedFile{part.FormName(), fname, contents}
+		ioutil.WriteFile("./uploaded_files/"+fname, contents, 0600)
 	}
+	AnalyzeAndResponse(w, r, fs)
+}
+
+// SavedFileAnalyseHandler processes the bugreport already saved.
+func SavedFileAnalyseHandler(w http.ResponseWriter, r *http.Request) {
+	fs := make(map[string]UploadedFile)
+
+	// Check bug report file1
+	fname := strings.Join(r.Form["savedfile0"], "")
+	if fname != "" {
+		contents, _ := ioutil.ReadFile("./uploaded_files/" + fname)
+		files, _ := bugreportutils.Contents("./uploaded_files/"+fname, contents)
+		for n, f := range files {
+			regex, _ := regexp.Compile("bugreport")
+			if regex.MatchString(n) {
+				contents = f
+			}
+		}
+		fs["bugreport"] = UploadedFile{"bugreport", fname, contents}
+	}
+
+	// Check bug report file2
+	fname = strings.Join(r.Form["savedfile1"], "")
+	if fname != "" {
+		contents, _ := ioutil.ReadFile("./uploaded_files/" + fname)
+		files, _ := bugreportutils.Contents("./uploaded_files/"+fname, contents)
+		for n, f := range files {
+			regex, _ := regexp.Compile("bugreport2")
+			if regex.MatchString(n) {
+				contents = f
+			}
+		}
+		fs["bugreport2"] = UploadedFile{"bugreport2", fname, contents}
+	}
+
 	AnalyzeAndResponse(w, r, fs)
 }
 
@@ -1044,3 +1092,4 @@ func batteryTime(contents string) (*bspb.BatteryStats_System_Battery, []error) {
 	}
 	return nil, []error{errors.New("could not find battery time info in bugreport")}
 }
+

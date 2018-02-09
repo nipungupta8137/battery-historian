@@ -14,9 +14,31 @@ specific language governing permissions and limitations under the License.
 <p id="processingError" style="display:none" class="alert alert-danger"></p>
 <div id="file-upload">
   <link rel="stylesheet" href="static/upload.css?ver={{.ResVersion}}">
+    {{ $length := len .FileList }}
+    {{ if eq $length 1 }}
+      <h1>View saved BugReport</h1>
+    {{end}}
+
+    {{ if eq $length 2 }}
+      <h1>Compare saved BugReport</h1>
+    {{end}}
+
+    {{ if ne $length 0 }}
+    <form action="/" class="form-signin" method="post">
+        {{ range $i, $value := .FileList }}
+        <b>File#{{index $i}}:</b> {{$value}} <br>
+        <input type="hidden" value="{{$value}}" name="savedfile{{index $i}}" />
+        {{ end }}
+        <input type="submit" value="Submit" />
+    </form>
+    {{ end }}
+
+  {{ if eq $length 0 }}
   <h1>Upload Bugreport</h1>
   <p>Both .txt and .zip bug reports are accepted.</p>
-  <form class="form-signin" method="post" enctype="multipart/form-data">
+  {{ end }}
+
+  <form class="form-signin" method="post" enctype="multipart/form-data" {{ if ne $length 0 }} style="visibility: hidden;" {{end}}>
     <fieldset style="margin-bottom: 10px">
       <span class="btn btn-default btn-file btn-browse">
         <span class="glyphicon glyphicon-folder-open"></span>
@@ -84,3 +106,4 @@ specific language governing permissions and limitations under the License.
   {{end}}
 </div>
 {{ end }}
+

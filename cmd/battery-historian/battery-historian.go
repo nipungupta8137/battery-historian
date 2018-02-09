@@ -51,7 +51,12 @@ func (s *analysisServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		analyzer.UploadHandler(w, r)
 	case "POST":
 		r.ParseForm()
-		analyzer.HTTPAnalyzeHandler(w, r)
+		if r.Form.Get("savedfile0") != "" {
+			analyzer.SavedFileAnalyseHandler(w, r)
+		} else {
+			analyzer.HTTPAnalyzeHandler(w, r)
+		}
+
 	default:
 		http.Error(w, fmt.Sprintf("Method %s not allowed", r.Method), http.StatusMethodNotAllowed)
 	}
@@ -99,7 +104,6 @@ func initFrontend() {
 
 	for _, p := range urlPrefix {
 		http.Handle(p, &analysisServer{})
-
 		for u, f := range urlDirs {
 			url := path.Join(p, u) + "/"
 			http.Handle(url, http.StripPrefix(url, http.FileServer(http.Dir(f))))
@@ -123,3 +127,4 @@ func main() {
 	log.Println("Listening on port: ", *port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))
 }
+
