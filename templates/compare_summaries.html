@@ -16,6 +16,7 @@ specific language governing permissions and limitations under the License.
     <div id="panel-fileinfo" class="panel panel-default collapse in" data-toggle="collapse">
       <button id="toggle-fileinfo" class="glyphicon glyphicon-remove btn btn-default btn-right btn-xxs" type="button" data-toggle="collapse" data-target="#panel-fileinfo"></button>
       <div class="panel-body">
+        <a href=".?file1={{index .Filename 0}}&file2={{index .Filename 1}}">Share Report</a>
         <table>
           <tr class="sdk-version-21">
             <td><b>File #1:</b> {{index .Filename 0}}</td>
@@ -102,3 +103,4 @@ specific language governing permissions and limitations under the License.
   </div>
 </div>
 {{end}}
+
